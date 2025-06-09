@@ -116,7 +116,7 @@ foreach (explode("\n", $ip2asn_v4_u32_tsv) as $line)
 }
 echo "Building IPv6 to AS lookup table...\n";
 $ipv6_to_aso = "";
-foreach (explode("\n", $ip2asn_v4_u32_tsv) as $line)
+foreach (explode("\n", $ip2asn_v6_tsv) as $line)
 {
 	$arr = explode("\t", $line, 5);
 	if (count($arr) == 5 && $arr[2])
