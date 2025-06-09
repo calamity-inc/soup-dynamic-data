@@ -30,17 +30,23 @@ function add_as(int $asn, string $handle, string $name)
 if (!file_exists("cache/as.csv"))
 {
 	echo "Downloading as.csv...\n";
-	file_put_contents("cache/as.csv", file_get_contents("https://raw.githubusercontent.com/ipverse/asn-info/master/as.csv"));
+	$data = file_get_contents("https://raw.githubusercontent.com/ipverse/asn-info/master/as.csv");
+	$data or die("Download failed");
+	file_put_contents("cache/as.csv", $data);
 }
 if (!file_exists("cache/ip2asn-v4-u32.tsv.gz"))
 {
 	echo "Downloading ip2asn-v4-u32.tsv.gz...\n";
-	file_put_contents("cache/ip2asn-v4-u32.tsv.gz", file_get_contents("https://iptoasn.com/data/ip2asn-v4-u32.tsv.gz"));
+	$data = file_get_contents("https://iptoasn.com/data/ip2asn-v4-u32.tsv.gz");
+	$data or die("Download failed");
+	file_put_contents("cache/ip2asn-v4-u32.tsv.gz", $data);
 }
 if (!file_exists("cache/ip2asn-v6.tsv.gz"))
 {
 	echo "Downloading ip2asn-v6.tsv.gz...\n";
-	file_put_contents("cache/ip2asn-v6.tsv.gz", file_get_contents("https://iptoasn.com/data/ip2asn-v6.tsv.gz"));
+	$data = file_get_contents("https://iptoasn.com/data/ip2asn-v6.tsv.gz");
+	$data or die("Download failed");
+	file_put_contents("cache/ip2asn-v6.tsv.gz", $data);
 }
 $ip2asn_v4_u32_tsv = gzdecode(file_get_contents("cache/ip2asn-v4-u32.tsv.gz"));
 $ip2asn_v6_tsv = gzdecode(file_get_contents("cache/ip2asn-v6.tsv.gz"));
