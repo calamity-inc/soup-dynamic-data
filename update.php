@@ -6,6 +6,12 @@ $asn_to_pack = [];
 function add_as(int $asn, string $handle, string $name)
 {
 	global $as_string_pool, $as_string_pool_map, $asn_to_pack;
+
+	if ($asn == 4134)
+	{
+		$name = "China Telecom";
+	}
+
 	if (!array_key_exists($handle, $as_string_pool_map))
 	{
 		$as_string_pool_map[$handle] = strlen($as_string_pool);
