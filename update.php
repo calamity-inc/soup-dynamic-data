@@ -48,6 +48,20 @@ if (!file_exists("cache/ip2asn-v6.tsv.gz"))
 	$data or die("Download failed");
 	file_put_contents("cache/ip2asn-v6.tsv.gz", $data);
 }
+if (!file_exists("cache/geolite2-city-ipv4-num.csv"))
+{
+	echo "Downloading geolite2-city-ipv4-num.csv.gz...\n";
+	$data = file_get_contents("https://raw.githubusercontent.com/sapics/ip-location-db/master/geolite2-city/geolite2-city-ipv4-num.csv.gz");
+	$data or die("Download failed");
+	file_put_contents("cache/geolite2-city-ipv4-num.csv", gzdecode($data));
+}
+if (!file_exists("cache/geolite2-city-ipv6.csv"))
+{
+	echo "Downloading geolite2-city-ipv6.csv...\n";
+	$data = file_get_contents("https://raw.githubusercontent.com/sapics/ip-location-db/master/geolite2-city/geolite2-city-ipv6.csv.gz");
+	$data or die("Download failed");
+	file_put_contents("cache/geolite2-city-ipv6.csv", gzdecode($data));
+}
 $ip2asn_v4_u32_tsv = gzdecode(file_get_contents("cache/ip2asn-v4-u32.tsv.gz"));
 $ip2asn_v6_tsv = gzdecode(file_get_contents("cache/ip2asn-v6.tsv.gz"));
 
@@ -126,14 +140,59 @@ foreach (explode("\n", $ip2asn_v6_tsv) as $line)
 	}
 }
 
+// Build IP to location lookup tables (assuming ip2loc already has them sorted)
+$location_string_pool = "";
+$location_string_pool_map = [];
+function location_string($str)
+{
+	global $location_string_pool, $location_string_pool_map;
+	if (!array_key_exists($str, $location_string_pool_map))
+	{
+		$location_string_pool_map[$str] = strlen($location_string_pool);
+		$location_string_pool .= $str."\0";
+	}
+	return $location_string_pool_map[$str];
+}
+echo "Building IPv4 to location lookup table...\n";
+$ipv4_to_location = "";
+$fh = fopen("cache/geolite2-city-ipv4-num.csv", "r");
+while ($arr = fgetcsv($fh))
+{
+	(strlen($arr[2]) == 2) or die("Country code must be 2 characters");
+	// Little endian so we can do a direct int compare instead of memcmp
+	$ipv4_to_location .= pack("VV", (int)$arr[0], (int)$arr[1]).$arr[2]."\0\0".pack("VV", location_string($arr[3]), location_string($arr[5]));
+}
+fclose($fh);
+echo "Building IPv6 to location lookup table...\n";
+$ipv6_to_location = "";
+$fh = fopen("cache/geolite2-city-ipv6.csv", "r");
+while ($arr = fgetcsv($fh))
+{
+	(strlen($arr[2]) == 2) or die("Country code must be 2 characters");
+	// inet_pton produces big endian binary format so memcmp will be needed here (not like you have a 128-bit CPU anyway)
+	$ipv6_to_location .= inet_pton($arr[0]).inet_pton($arr[1]).$arr[2]."\0\0".pack("VV", location_string($arr[3]), location_string($arr[5]));
+}
+fclose($fh);
+
 echo "Compressing & writing output...\n";
 file_put_contents("as_pool.bin.gz", gzencode($as_pool, 9));
 file_put_contents("as_string_pool.bin.gz", gzencode($as_string_pool, 9));
 file_put_contents("ipv4_to_aso.bin.gz", gzencode($ipv4_to_aso, 9));
 file_put_contents("ipv6_to_aso.bin.gz", gzencode($ipv6_to_aso, 9));
+file_put_contents("location_string_pool.bin.gz", gzencode($location_string_pool, 9));
+file_put_contents("ipv4_to_location.bin.gz", gzencode($ipv4_to_location, 9));
+file_put_contents("ipv6_to_location.bin.gz", gzencode($ipv6_to_location, 9));
 $version = time();
 $expiry = (floor(time() / 86400) + 1) * 86400 + 3 * 3600; // Tomorrow at 3:00 UTC
-file_put_contents("meta.bin", pack("PPVVVV", $version, $expiry, strlen($as_pool), strlen($as_string_pool), strlen($ipv4_to_aso), strlen($ipv6_to_aso)));
+file_put_contents("meta.bin",
+	pack(
+		"PPVVVVVVVV",
+		$version, $expiry,
+		strlen($as_pool), strlen($as_string_pool), strlen($ipv4_to_aso), strlen($ipv6_to_aso),
+		strlen($location_string_pool), strlen($ipv4_to_location), strlen($ipv6_to_location), 0
+	)
+	.md5($location_string_pool.$ipv4_to_location.$ipv6_to_location, true) // Location data is not updated daily.
+);
 
 if (true)
 {
@@ -143,4 +202,7 @@ if (true)
 	file_put_contents("uncompressed/as_string_pool.bin", $as_string_pool);
 	file_put_contents("uncompressed/ipv4_to_aso.bin", $ipv4_to_aso);
 	file_put_contents("uncompressed/ipv6_to_aso.bin", $ipv6_to_aso);
+	file_put_contents("uncompressed/location_string_pool.bin", $location_string_pool);
+	file_put_contents("uncompressed/ipv4_to_location.bin", $ipv4_to_location);
+	file_put_contents("uncompressed/ipv6_to_location.bin", $ipv6_to_location);
 }
