@@ -1,0 +1,22 @@
+name: Update
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - run: php update.php
+      - run: git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - run: git config --local user.name "github-actions[bot]"
+      - run: git add .
+      - run: git commit -m "Update"
+      - uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
