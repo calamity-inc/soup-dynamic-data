@@ -126,7 +126,7 @@ file_put_contents("as_string_pool.bin.gz", gzencode($as_string_pool, 9));
 file_put_contents("ipv4_to_aso.bin.gz", gzencode($ipv4_to_aso, 9));
 file_put_contents("ipv6_to_aso.bin.gz", gzencode($ipv6_to_aso, 9));
 $version = time();
-$expiry = (floor(time() / 86400) + 1) * 86400; // Tomorrow at 0 UTC
+$expiry = (floor(time() / 86400) + 1) * 86400 + 3 * 3600; // Tomorrow at 3:00 UTC
 file_put_contents("meta.bin", pack("PPVVVV", $version, $expiry, strlen($as_pool), strlen($as_string_pool), strlen($ipv4_to_aso), strlen($ipv6_to_aso)));
 
 if (true)
