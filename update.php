@@ -183,7 +183,7 @@ file_put_contents("location_string_pool.bin.gz", gzencode($location_string_pool,
 file_put_contents("ipv4_to_location.bin.gz", gzencode($ipv4_to_location, 9));
 file_put_contents("ipv6_to_location.bin.gz", gzencode($ipv6_to_location, 9));
 $version = time();
-$expiry = (floor(time() / 86400) + 1) * 86400 + 3 * 3600; // Tomorrow at 3:00 UTC
+$expiry = (floor(time() / 86400) + 1) * 86400 + 4 * 3600; // Tomorrow at 4:00 UTC
 file_put_contents("meta.bin",
 	pack(
 		"PPVVVVVVVV",
