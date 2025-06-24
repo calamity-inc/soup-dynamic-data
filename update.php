@@ -136,7 +136,7 @@ foreach (explode("\n", $ip2asn_v6_tsv) as $line)
 	if (count($arr) == 5 && $arr[2])
 	{
 		// inet_pton produces big endian binary format so memcmp will be needed here (not like you have a 128-bit CPU anyway)
-		$ipv6_to_aso .= inet_pton($arr[0]).inet_pton($arr[1]).pack("V", (int)$arr[2]);
+		$ipv6_to_aso .= inet_pton($arr[0]).inet_pton($arr[1]).pack("V", $asn_to_aso[(int)$arr[2]]);
 	}
 }
 
