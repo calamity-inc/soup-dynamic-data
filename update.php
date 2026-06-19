@@ -51,14 +51,14 @@ if (!file_exists("cache/ip2asn-v6.tsv.gz"))
 if (!file_exists("cache/geolite2-city-ipv4-num.csv"))
 {
 	echo "Downloading geolite2-city-ipv4-num.csv.gz...\n";
-	$data = file_get_contents("https://raw.githubusercontent.com/sapics/ip-location-db/master/geolite2-city/geolite2-city-ipv4-num.csv.gz");
+	$data = file_get_contents("https://github.com/sapics/ip-location-db/releases/download/latest/geolite2-city-ipv4-num.csv.gz");
 	$data or die("Download failed");
 	file_put_contents("cache/geolite2-city-ipv4-num.csv", gzdecode($data));
 }
 if (!file_exists("cache/geolite2-city-ipv6.csv"))
 {
 	echo "Downloading geolite2-city-ipv6.csv...\n";
-	$data = file_get_contents("https://raw.githubusercontent.com/sapics/ip-location-db/master/geolite2-city/geolite2-city-ipv6.csv.gz");
+	$data = file_get_contents("https://github.com/sapics/ip-location-db/releases/download/latest/geolite2-city-ipv6.csv.gz");
 	$data or die("Download failed");
 	file_put_contents("cache/geolite2-city-ipv6.csv", gzdecode($data));
 }
